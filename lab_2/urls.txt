@@ -1,0 +1,2 @@
+course%3A%2F%2Fweb%2Ebackend%3Fname%3D%22%D0%90%D0%BD%D0%B0%D1%81%D1%82%D0%B0%D1%81%D1%96%D1%8F%20%D0%9D%D0%B0%D0%B9%22%26group%3D%22%D0%A4%D0%95%D0%9F%2D23%22%26subgroup%3D%22%D0%9F%D1%96%D0%B4%D0%B3%D1%80%D1%83%D0%BF%D0%B0%202%22%23nainastiia
+https://bank.gov.ua/NBUStatService/v1/statdirectory/banksincexp?date=20240801&period=m&json
