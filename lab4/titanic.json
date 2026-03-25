@@ -1,0 +1,37 @@
+[
+  {
+    "PassengerId": 1,
+    "Survived": 0,
+    "Name": "Braund, Mr. Owen Harris",
+    "Age": 22,
+    "Ticket": "A/5 21171"
+  },
+  {
+    "PassengerId": 2,
+    "Survived": 1,
+    "Name": "Cumings, Mrs. John Bradley (Florence Briggs Thayer)",
+    "Age": 38,
+    "Ticket": "PC 17599"
+  },
+  {
+    "PassengerId": 3,
+    "Survived": 1,
+    "Name": "Heikkinen, Miss. Laina",
+    "Age": 26,
+    "Ticket": "STON/O2. 3101282"
+  },
+  {
+    "PassengerId": 4,
+    "Survived": 1,
+    "Name": "Futrelle, Mrs. Jacques Heath (Lily May Peel)",
+    "Age": 35,
+    "Ticket": "113803"
+  },
+  {
+    "PassengerId": 5,
+    "Survived": 0,
+    "Name": "Allen, Mr. William Henry",
+    "Age": 35,
+    "Ticket": "373450"
+  }
+]
