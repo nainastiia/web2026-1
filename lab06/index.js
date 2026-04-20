@@ -21,6 +21,25 @@ if (!fs.existsSync(cachePath)) {
     fs.mkdirSync(cachePath, { recursive: true });
 }
 
+const dbPath = path.join(__dirname, 'inventory.json');
+
+// Функція для читання даних з файлу
+function loadInventory() {
+    if (fs.existsSync(dbPath)) {
+        const data = fs.readFileSync(dbPath, 'utf8');
+        return JSON.parse(data);
+    }
+    return [];
+}
+
+// Функція для збереження даних у файл
+function saveInventory(data) {
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
+}
+
+// Завантажуємо дані при старті сервера
+let inventory = loadInventory();
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, cachePath),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
@@ -29,8 +48,6 @@ const upload = multer({ storage });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-let inventory = [];
 
 const swaggerOptions = {
     swaggerDefinition: {
@@ -72,20 +89,91 @@ app.post('/register', upload.single('photo'), (req, res) => {
     if (!inventory_name) {
         return res.status(400).send('Bad Request: inventory_name is required');
     }
+    const newId = inventory.length > 0 
+        ? (Math.max(...inventory.map(item => parseInt(item.id))) + 1).toString() 
+        : "1";
+
     const newItem = {
-        id: Date.now().toString(),
+        id: newId, 
         inventory_name,
         description: description || '',
         photo: req.file ? req.file.filename : null
     };
     inventory.push(newItem);
+    saveInventory(inventory);
     res.status(201).json(newItem);
+});
+
+/**
+ * @openapi
+ * /inventory:
+ *   get:
+ *     summary: Отримання списку всіх речей
+ *     responses:
+ *       200:
+ *         description: Список пристроїв успішно отримано
+ */
+app.get('/inventory', (req, res) => {
+    const response = inventory.map(item => ({
+        ...item,
+        photo_url: item.photo ? `http://${options.host}:${options.port}/inventory/${item.id}/photo` : null
+    }));
+    res.status(200).json(response);
+});
+
+/**
+ * @openapi
+ * /inventory/{id}:
+ *   get:
+ *     summary: Отримання інформації про конкретну
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Інформація про річ знайдена
+ *       404:
+ *         description: Річ не знайдена
+ */
+app.get('/inventory/:id', (req, res) => {
+    const item = inventory.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).send('Not Found');
+    res.status(200).json({
+        ...item,
+        photo_url: item.photo ? `http://${options.host}:${options.port}/inventory/${item.id}/photo` : null
+    });
+});
+
+/**
+ * @openapi
+ * /inventory/{id}/photo:
+ *   get:
+ *     summary: Отримання зображення речі
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Фото не знайдено
+ */
+app.get('/inventory/:id/photo', (req, res) => {
+    const item = inventory.find(i => i.id === req.params.id);
+    if (!item || !item.photo) return res.status(404).send('Not Found');
+    res.status(200).contentType('image/jpeg').sendFile(path.join(cachePath, item.photo));
 });
 
 app.get('/RegisterForm.html', (req, res) => res.sendFile(path.resolve('RegisterForm.html')));
 app.get('/SearchForm.html', (req, res) => res.sendFile(path.resolve('SearchForm.html')));
-
-app.all('/inventory', (req, res) => res.status(405).send('Method Not Allowed'));
 
 const server = http.createServer(app);
 server.listen(options.port, options.host, () => {
