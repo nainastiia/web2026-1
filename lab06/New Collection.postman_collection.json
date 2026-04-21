@@ -1,0 +1,230 @@
+{
+  "info": {
+    "_postman_id": "295caf6b-99bb-4943-81ba-0d862e8d8144",
+    "name": "New Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54197196",
+    "_collection_link": "https://go.postman.co/collection/54197196-295caf6b-99bb-4943-81ba-0d862e8d8144?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "register",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "inventory_name",
+              "value": "Wi-Fi Роутер MikroTik",
+              "type": "text",
+              "uuid": "995c75ee-12cb-4973-b9d7-379326546d29"
+            },
+            {
+              "key": "description",
+              "value": "Головний роутер на другому поверсі. Налаштований на 2 частоти.",
+              "type": "text",
+              "uuid": "fcf66bae-3ab7-4e56-a18f-b8acfe6ff69b"
+            },
+            {
+              "key": "photo",
+              "type": "file",
+              "uuid": "5f8f6d11-1f85-416a-b08a-de412f622489",
+              "src": "/C:/Users/Анастасія/web2026-1/lab06/wi-fi.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "inventory",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "inventory/id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "inventory/id/photo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory/1/photo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1",
+            "photo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "inventory/id",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"inventory_name\": \"Принтер Canon i-SENSYS\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/inventory/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "inventory/id/photo",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "photo",
+              "type": "file",
+              "uuid": "25b05fe0-953f-4b6c-844d-ad393217f9f6",
+              "src": "/C:/Users/Анастасія/web2026-1/lab06/printer.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/inventory/1/photo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1",
+            "photo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "inventory/id",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory/3",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "3"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "search",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "id",
+              "value": "1",
+              "type": "text",
+              "uuid": "06694c86-928f-4bf9-bab9-8c19c483387e"
+            },
+            {
+              "key": "has_photo",
+              "value": "",
+              "type": "text",
+              "uuid": "842c79d9-243d-49ed-b414-779e70524cfb"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/search",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "search"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
