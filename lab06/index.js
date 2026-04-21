@@ -37,7 +37,6 @@ function saveInventory(data) {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// Завантажуємо дані при старті сервера
 let inventory = loadInventory();
 
 const storage = multer.diskStorage({
@@ -170,6 +169,124 @@ app.get('/inventory/:id/photo', (req, res) => {
     const item = inventory.find(i => i.id === req.params.id);
     if (!item || !item.photo) return res.status(404).send('Not Found');
     res.status(200).contentType('image/jpeg').sendFile(path.join(cachePath, item.photo));
+});
+
+/**
+ * @openapi
+ * /inventory/{id}:
+ *   put:
+ *     summary: Оновлення імені або опису конкретної речі
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               inventory_name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Дані оновлено
+ *       404:
+ *         description: Річ не знайдена
+ */
+app.put('/inventory/:id', (req, res) => {
+    const item = inventory.find(i => i.id === req.params.id);
+
+    if (!item) {
+        return res.status(404).send('Not Found');
+    }
+    const { inventory_name, description } = req.body;
+    if (inventory_name !== undefined && inventory_name.trim() !== "string") {
+        item.inventory_name = inventory_name;
+    }
+
+    if (description !== undefined && description.trim() !== "string") {
+        item.description = description;
+    }
+    saveInventory(inventory);
+    res.status(200).json(item);
+});
+
+/**
+ * @openapi
+ * /inventory/{id}/photo:
+ *   put:
+ *     summary: Оновлення фото зображення конкретної речі
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Фото успішно оновлено
+ *       404:
+ *         description: Річ не знайдена
+ */
+app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
+    const item = inventory.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).send('Not Found');
+    if (!req.file) return res.status(400).send('Bad Request: photo file is required');
+
+    // Видаляємо старе фото, якщо воно було
+    if (item.photo) {
+        const oldPath = path.join(cachePath, item.photo);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
+
+    item.photo = req.file.filename;
+    saveInventory(inventory);
+    res.status(200).json(item);
+});
+
+/**
+ * @openapi
+ * /inventory/{id}:
+ *   delete:
+ *     summary: Видалення інвентаризованої речі зі списку
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Річ успішно видалена
+ *       404:
+ *         description: Річ не знайдена
+ */
+app.delete('/inventory/:id', (req, res) => {
+    const index = inventory.findIndex(i => i.id === req.params.id);
+    if (index === -1) return res.status(404).send('Not Found');
+
+    if (inventory[index].photo) {
+        const photoPath = path.join(cachePath, inventory[index].photo);
+        if (fs.existsSync(photoPath)) fs.unlinkSync(photoPath);
+    }
+
+    inventory.splice(index, 1);
+    saveInventory(inventory);
+    res.status(200).send('Deleted');
 });
 
 app.get('/RegisterForm.html', (req, res) => res.sendFile(path.resolve('RegisterForm.html')));
