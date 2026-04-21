@@ -59,6 +59,21 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+app.all('/inventory', (req, res, next) => {
+    if (req.method !== 'GET') {
+        return res.status(405).send('Method Not Allowed');
+    }
+    next();
+});
+
+app.all('/inventory/:id', (req, res, next) => {
+    const validMethods = ['GET', 'PUT', 'DELETE'];
+    if (!validMethods.includes(req.method)) {
+        return res.status(405).send('Method Not Allowed');
+    }
+    next();
+});
+
 /**
  * @openapi
  * /register:
@@ -287,6 +302,43 @@ app.delete('/inventory/:id', (req, res) => {
     inventory.splice(index, 1);
     saveInventory(inventory);
     res.status(200).send('Deleted');
+});
+
+/**
+ * @openapi
+ * /search:
+ *   post:
+ *     summary: Пошук пристрою за ID
+ *     requestBody:
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               has_photo:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Пристрій знайдено
+ *       404:
+ *         description: Пристрій не знайдено
+ */
+app.post('/search', (req, res) => {
+    const { id, has_photo } = req.body;
+    const item = inventory.find(i => i.id === id);
+
+    if (!item) return res.status(404).send('Not Found');
+
+    const result = { ...item };
+    if (has_photo === 'true' || has_photo === 'yes') {
+        result.photo_url = item.photo ? `http://${options.host}:${options.port}/inventory/${item.id}/photo` : null;
+    } else {
+        delete result.photo; 
+    }
+
+    res.status(200).json(result);
 });
 
 app.get('/RegisterForm.html', (req, res) => res.sendFile(path.resolve('RegisterForm.html')));
