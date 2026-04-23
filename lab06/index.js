@@ -1,10 +1,10 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
-const multer = require('multer');
+const express = require('express');//спрощує стаорення API
+const multer = require('multer');//middleware для завантаження фото
 const { program } = require('commander');
-const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerJsDoc = require('swagger-jsdoc'); //для документації
 const swaggerUi = require('swagger-ui-express');
 
 program
@@ -14,17 +14,16 @@ program
   .parse(process.argv);
 
 const options = program.opts();
-const app = express();
+const app = express();//express застосунок для методів
 
-const cachePath = path.resolve(options.cache);
+const cachePath = path.resolve(options.cache);//відносний шлях->абсолютний
 if (!fs.existsSync(cachePath)) {
-    fs.mkdirSync(cachePath, { recursive: true });
+    fs.mkdirSync(cachePath, { recursive: true });//створює папку кешу
 }
 
 const dbPath = path.join(__dirname, 'inventory.json');
 
-// Функція для читання даних з файлу
-function loadInventory() {
+function loadInventory() {//читає файл повертає JSмасив
     if (fs.existsSync(dbPath)) {
         const data = fs.readFileSync(dbPath, 'utf8');
         return JSON.parse(data);
@@ -32,21 +31,20 @@ function loadInventory() {
     return [];
 }
 
-// Функція для збереження даних у файл
-function saveInventory(data) {
+function saveInventory(data) {//зберігає в JSON
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
 }
 
 let inventory = loadInventory();
 
-const storage = multer.diskStorage({
+const storage = multer.diskStorage({//збереження фото в кеші
     destination: (req, file, cb) => cb(null, cachePath),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json());//дозвіл JSON
+app.use(express.urlencoded({ extended: true }));//дозвіл форм
 
 const swaggerOptions = {
     swaggerDefinition: {
@@ -56,7 +54,7 @@ const swaggerOptions = {
     },
     apis: ['./index.js']
 };
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
+const swaggerDocs = swaggerJsDoc(swaggerOptions);//документація
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.all('/inventory', (req, res, next) => {
@@ -129,7 +127,7 @@ app.post('/register', upload.single('photo'), (req, res) => {
  */
 app.get('/inventory', (req, res) => {
     const response = inventory.map(item => ({
-        ...item,
+        ...item,//копіює всі дані в новий масив для кожного обєкта
         photo_url: item.photo ? `http://${options.host}:${options.port}/inventory/${item.id}/photo` : null
     }));
     res.status(200).json(response);
@@ -265,10 +263,10 @@ app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
     // Видаляємо старе фото, якщо воно було
     if (item.photo) {
         const oldPath = path.join(cachePath, item.photo);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);//видаляє
     }
 
-    item.photo = req.file.filename;
+    item.photo = req.file.filename;//нове
     saveInventory(inventory);
     res.status(200).json(item);
 });
@@ -291,18 +289,18 @@ app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
  *         description: Річ не знайдена
  */
 app.delete('/inventory/:id', (req, res) => {
-    const index = inventory.findIndex(i => i.id === req.params.id);
-    if (index === -1) return res.status(404).send('Not Found');
+    const item = inventory.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).send('Not Found');
 
-    if (inventory[index].photo) {
-        const photoPath = path.join(cachePath, inventory[index].photo);
+    if (item.photo) {
+        const photoPath = path.join(cachePath, item.photo);
         if (fs.existsSync(photoPath)) fs.unlinkSync(photoPath);
     }
-
-    inventory.splice(index, 1);
+    inventory = inventory.filter(i => i.id !== req.params.id);//новий масив без нього
     saveInventory(inventory);
     res.status(200).send('Deleted');
 });
+
 
 /**
  * @openapi
@@ -328,7 +326,6 @@ app.delete('/inventory/:id', (req, res) => {
 app.post('/search', (req, res) => {
     const { id, has_photo } = req.body;
     const item = inventory.find(i => i.id === id);
-
     if (!item) return res.status(404).send('Not Found');
 
     const result = { ...item };
@@ -341,7 +338,7 @@ app.post('/search', (req, res) => {
     res.status(200).json(result);
 });
 
-app.get('/RegisterForm.html', (req, res) => res.sendFile(path.resolve('RegisterForm.html')));
+app.get('/RegisterForm.html', (req, res) => res.sendFile(path.resolve('RegisterForm.html')));//відправляє файл з абсолютним шляхом
 app.get('/SearchForm.html', (req, res) => res.sendFile(path.resolve('SearchForm.html')));
 
 const server = http.createServer(app);
